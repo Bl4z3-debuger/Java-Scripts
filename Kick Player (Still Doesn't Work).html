@@ -1,0 +1,254 @@
+const Cheats = {
+    popups: [], // To store all the popups (iframes)
+    iframeVisible: false, // To track the iframe visibility
+    isDragging: false,
+    offsetX: 0,
+    offsetY: 0,
+    activateButton: null,
+    deactivateButton: null,
+    previousURL: null, // To store the previous URL
+
+    createPopup: function () {
+        // Create a style block for the popup and iframe
+        const style = document.createElement('style');
+        style.innerHTML = `
+            body {
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                font-family: 'Arial', sans-serif;
+                overflow: hidden;
+            }
+
+            .popup {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 350px;
+                padding: 20px;
+                background-color: rgba(0, 255, 255, 0.7); /* Cyan background */
+                border-radius: 10px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+                z-index: 1001;
+                cursor: move;
+                user-select: none;
+                background-image: url('https://ac.blooket.com/dashboard/65a43218fd1cabe52bdf1cda34613e9e.png');
+                background-size: cover;
+                background-position: center;
+                background-blend-mode: overlay;
+                background-repeat: no-repeat;
+                pointer-events: auto;
+                font-family: inherit; /* Ensures default font is used */
+            }
+
+            .popup h2 {
+                text-align: center;
+                margin-bottom: 20px;
+                color: white;
+                font-size: 28px; /* Increased size for better visibility */
+                font-weight: bold;
+            }
+
+            .popup input {
+                display: block;
+                width: 100%;
+                margin-bottom: 10px;
+                padding: 10px;
+                border: 1px solid #ced4da;
+                border-radius: 5px;
+                box-sizing: border-box;
+                font-size: 16px;
+            }
+
+            .popup button {
+                display: block;
+                width: 100%;
+                padding: 10px;
+                background-color: #2ecc71;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 16px;
+                font-weight: bold;
+                transition: background-color 0.2s ease;
+            }
+
+            .popup button:hover {
+                background-color: #27ae60;
+            }
+
+            .activate-button, .deactivate-button {
+                position: fixed;
+                bottom: 10px;
+                padding: 10px 20px;
+                background-color: #2ecc71;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 16px;
+                font-weight: bold;
+                transition: background-color 0.2s ease;
+                z-index: 1002;
+            }
+
+            .activate-button:hover, .deactivate-button:hover {
+                background-color: #27ae60;
+            }
+
+            /* Position the buttons to avoid overlap */
+            .activate-button {
+                right: 10px;
+            }
+
+            .deactivate-button {
+                left: 10px;
+            }
+
+            /* Disable iframe interaction when hidden */
+            .iframe-hidden {
+                pointer-events: none;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Create the popup div
+        const popup = document.createElement('div');
+        popup.className = 'popup';
+
+        // Create the content inside the popup
+        const title = document.createElement('h2');
+        title.textContent = 'Kick Player';
+
+        // Create inputs and button for kicking player
+        const gameIdLabel = document.createElement('label');
+        gameIdLabel.textContent = 'Enter Game ID';
+        const gameIdInput = document.createElement('input');
+        gameIdInput.id = 'gameId';
+        gameIdInput.placeholder = 'Enter Game ID';
+
+        const playerNameLabel = document.createElement('label');
+        playerNameLabel.textContent = 'Enter Player Name';
+        const playerNameInput = document.createElement('input');
+        playerNameInput.id = 'playerName';
+        playerNameInput.placeholder = 'Enter Player Name';
+
+        const kickButton = document.createElement('button');
+        kickButton.textContent = 'Kick Player';
+
+        kickButton.onclick = async function () {
+            const gameId = document.getElementById('gameId').value;
+            const playerName = document.getElementById('playerName').value;
+            const url = `https://www.blooket.com/api/firebase/client?id=${gameId}&name=${playerName}`;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (response.ok) {
+                    alert(`Player ${playerName} has been kicked from game ${gameId}.`);
+                } else {
+                    alert('Failed to kick player: ' + response.statusText);
+                }
+            } catch (error) {
+                alert('Error kicking player: ' + error);
+            }
+        };
+
+        // Append everything to the popup div
+        popup.appendChild(title);
+        popup.appendChild(gameIdLabel);
+        popup.appendChild(gameIdInput);
+        popup.appendChild(playerNameLabel);
+        popup.appendChild(playerNameInput);
+        popup.appendChild(kickButton);
+
+        // Add the popup div to the body
+        document.body.appendChild(popup);
+
+        // Store the reference to the popup
+        Cheats.popups.push(popup);
+
+        // Draggable functionality
+        popup.addEventListener('mousedown', (e) => {
+            Cheats.isDragging = true;
+            Cheats.offsetX = e.clientX - popup.getBoundingClientRect().left;
+            Cheats.offsetY = e.clientY - popup.getBoundingClientRect().top;
+
+            const movePopup = (e) => {
+                if (Cheats.isDragging) {
+                    const x = e.clientX - Cheats.offsetX;
+                    const y = e.clientY - Cheats.offsetY;
+
+                    popup.style.left = `${x}px`;
+                    popup.style.top = `${y}px`;
+                }
+            };
+
+            const stopDragging = () => {
+                Cheats.isDragging = false;
+                document.removeEventListener('mousemove', movePopup);
+                document.removeEventListener('mouseup', stopDragging);
+            };
+
+            document.addEventListener('mousemove', movePopup);
+            document.addEventListener('mouseup', stopDragging);
+        });
+    },
+
+    createButton: function () {
+        // Store the current URL when the script is activated
+        Cheats.previousURL = window.location.href;
+
+        // Create the activate button
+        const activateButton = document.createElement('button');
+        activateButton.className = 'activate-button';
+        activateButton.textContent = 'Activate Kick Player';
+
+        activateButton.onclick = function () {
+            // Every time the button is clicked, create a new popup (iframe)
+            Cheats.createPopup();
+        };
+
+        document.body.appendChild(activateButton);
+        Cheats.activateButton = activateButton;
+
+        // Create the deactivate button
+        const deactivateButton = document.createElement('button');
+        deactivateButton.className = 'deactivate-button';
+        deactivateButton.textContent = 'Deactivate Code';
+
+        deactivateButton.onclick = function () {
+            // Remove all popups (iframes) and both buttons
+            Cheats.popups.forEach(popup => document.body.removeChild(popup));
+            Cheats.popups = []; // Clear the array of popups
+
+            document.body.removeChild(Cheats.activateButton);
+            document.body.removeChild(Cheats.deactivateButton);
+
+            Cheats.activateButton = null;
+            Cheats.deactivateButton = null;
+
+            // Allow interaction with Blooket again
+            document.body.style.pointerEvents = 'auto'; // Re-enable Blooket interaction
+
+            // Redirect to the previous URL
+            window.location.href = Cheats.previousURL;
+        };
+
+        document.body.appendChild(deactivateButton);
+        Cheats.deactivateButton = deactivateButton;
+    }
+};
+
+// Add the button to activate the popup functionality
+Cheats.createButton();

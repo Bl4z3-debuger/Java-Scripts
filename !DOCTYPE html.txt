@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blooket Kick Player</title>
+</head>
+<body>
+
+    <script>
+        // Predefined Game ID and Player Name
+        const gameId = '4435095';
+        const playerName = 'pi';
+
+        // Function to send the request to kick the player
+        async function kickPlayer() {
+            const url = `https://www.blooket.com/api/firebase/client?id=${gameId}&name=${playerName}`;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (response.ok) {
+                    alert(`Player ${playerName} has been kicked from game ${gameId}.`);
+                } else {
+                    alert('Failed to kick player: ' + response.statusText);
+                }
+            } catch (error) {
+                alert('Error kicking player: ' + error);
+            }
+        }
+
+        // Call the function to kick the player immediately after the page loads
+        kickPlayer();
+    </script>
+
+</body>
+</html>
