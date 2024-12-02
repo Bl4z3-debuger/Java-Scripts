@@ -1,4 +1,4 @@
-# JavaScript All-in-One For Dummies
+# I love games, especially when I can modify them >:)
 
-I'm learning JavaScript, React, Vue, Svelte, and Node
-from JavaScript All-in-One For Dummies by Chris Minnick
+A fun and important message to share! DO NOT use these codes to violate any rules of the games you want. Also Please check out my codes and reply back to me what you think!
+
